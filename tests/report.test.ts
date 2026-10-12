@@ -1,0 +1,3 @@
+import { describe, it, expect } from 'vitest';
+import { report, medicationDays } from '../src/domain';
+describe('reports', () => { it('stops counting days after discontinuation', () => expect(medicationDays({ startDate: '2026-10-01', endDate: '2026-10-03' } as any, '2026-10-12')).toBe(3)); it('excludes data outside range and keeps units', () => { const b: any = { temperatures: [], medications: [], medicationLogs: [], events: [], labs: [{ testedAt: '2026-10-01', name: 'CRP', value: 8, unit: 'mg/L' }, { testedAt: '2026-09-01', name: 'OLD', value: 10, unit: 'mg/L' }] }; const s = report(b, '2026-10-01', '2026-10-12'); expect(s).toContain('8 mg/L'); expect(s).not.toContain('OLD'); }); });

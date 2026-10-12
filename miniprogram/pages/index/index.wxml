@@ -1,0 +1,55 @@
+<view class="container">
+ <view class="title">康程记录</view>
+ <view wx:if="{{error}}" class="error">{{error}}<button bindtap="reload">重新连接</button></view>
+ <view wx:if="{{busy}}" class="muted">正在访问数据库…</view>
+ <block wx:if="{{tab==='home'}}">
+  <view class="notice">通过接口保存至本项目独立数据库。请定期备份；本工具不诊断疾病、不推荐或调整用药。</view>
+  <view class="split"><view class="card"><view>今日最高体温</view><view class="value">{{maxToday}}</view></view><view class="card"><view>最近体温</view><view class="muted">{{latestText}}</view></view></view>
+  <view class="actions"><button data-key="temperatures" bindtap="selectTab">记体温</button><button data-key="medications" bindtap="selectTab">记用药</button><button data-key="labs" bindtap="selectTab">记化验</button></view>
+  <view class="heading">当前用药</view><view wx:if="{{!activeMeds.length}}" class="card muted">暂无用药方案</view>
+  <view wx:for="{{activeMeds}}" wx:key="id" class="card"><view>{{item.name}} · 已用 {{item.days}} 天</view><view class="muted">{{item.dose}}{{item.unit}} × {{item.frequency}}次/日 · {{item.route}}</view></view>
+  <view class="heading">最近一次化验</view><view wx:if="{{!latestLabs.length}}" class="card muted">暂无化验记录</view>
+  <view wx:for="{{latestLabs}}" wx:key="id" class="card"><view>{{item.name}}：{{item.value}} {{item.unit}}</view><view class="muted">{{item.testedAt}} {{item.hospital}}</view></view>
+  <button bindtap="exportBackup">导出 JSON 备份</button><view class="card"><view class="field-name">家庭数据访问密钥（本地开发可空）</view><input password value="{{accessKey}}" bindinput="keyInput"/><button bindtap="connect">连接家庭数据</button></view>
+ </block>
+ <block wx:if="{{tab==='temperatures'||tab==='medications'||tab==='labs'}}">
+  <view class="heading">{{editId?'编辑记录':'新增记录'}}</view>
+  <button wx:if="{{tab==='medications'}}" bindtap="logToggle">{{logMode?'返回处方方案':'记录实际服药 / 输液'}}</button>
+  <view class="card">
+   <view wx:for="{{fields}}" wx:key="key" class="field">
+    <view class="field-name">{{item.label}}</view>
+    <picker wx:if="{{item.type==='select'}}" range="{{item.options}}" data-key="{{item.key}}" bindchange="selectField"><view class="picker">{{item.key==='changeMode'?(form.changeMode==='correction'?'修正录入错误':'调整方案（保留历史）'):(form[item.key]||'请选择')}}</view></picker>
+    <picker wx:elif="{{item.type==='medication'}}" range="{{medNames}}" data-key="{{item.key}}" bindchange="selectField"><view class="picker">{{form.medicationId?'已选择药品（点击更换）':'请选择药品'}}</view></picker>
+    <picker wx:elif="{{item.type==='date'}}" mode="date" value="{{form[item.key]}}" data-key="{{item.key}}" bindchange="fieldInput"><view class="picker">{{form[item.key]||'选择日期（可空）'}}</view></picker>
+    <view wx:elif="{{item.type==='datetime'}}" class="actions"><picker mode="date" data-key="{{item.key}}" data-part="date" bindchange="datePart"><view class="picker">选择日期</view></picker><picker mode="time" data-key="{{item.key}}" data-part="time" bindchange="datePart"><view class="picker">选择时间</view></picker><view>{{form[item.key]}}</view></view>
+    <textarea wx:elif="{{item.type==='textarea'}}" value="{{form[item.key]}}" data-key="{{item.key}}" bindinput="fieldInput" maxlength="10000"/>
+    <switch wx:elif="{{item.type==='switch'}}" checked="{{form[item.key]}}" data-key="{{item.key}}" bindchange="fieldInput"/>
+    <checkbox-group wx:elif="{{item.type==='symptoms'}}" bindchange="symptomChange" class="symptoms"><label wx:for="{{symptomOptions}}" wx:key="name" wx:for-item="sym"><checkbox value="{{sym.name}}" checked="{{sym.checked}}"/>{{sym.name}}</label></checkbox-group>
+    <input wx:else type="{{item.type}}" value="{{form[item.key]}}" data-key="{{item.key}}" bindinput="fieldInput" maxlength="10000"/>
+   </view>
+   <picker wx:if="{{resource==='labs'}}" range="{{labNames}}" bindchange="chooseIndicator"><view class="picker">选择常用化验指标（或在上方自定义）</view></picker>
+   <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="save">保存{{logMode?'实际执行':'记录'}}</button><button wx:if="{{editId}}" bindtap="cancelEdit">取消编辑</button>
+  </view>
+ </block>
+ <block wx:if="{{tab==='temperatures'}}">
+  <view class="heading">历史体温（{{temperatures.length}}）</view><view wx:if="{{!temperatures.length}}" class="card muted">暂无记录，请填写上方表单。</view>
+  <view wx:for="{{temperatures}}" wx:key="id" class="card"><view>{{item.value}}℃ · {{item.method}}</view><view class="muted">{{item.measuredAt}} {{item.symptoms}} {{item.note}}</view><view class="actions"><button data-resource="temperatures" data-id="{{item.id}}" bindtap="edit">编辑</button><button class="danger" data-resource="temperatures" data-id="{{item.id}}" bindtap="remove">删除</button></view></view>
+ </block>
+ <block wx:if="{{tab==='medications'}}">
+  <view class="heading">处方方案（{{medications.length}}）</view><view wx:if="{{!medications.length}}" class="card muted">暂无用药方案</view>
+  <view wx:for="{{medications}}" wx:key="id" class="card"><view>{{item.name}} · {{item.days}}天</view><view class="muted">{{item.spec}}；{{item.dose}}{{item.unit}}/次；每日{{item.frequency}}次；{{item.route}}</view><view class="muted">{{item.startDate}} 至 {{item.endDate||'持续中'}} {{item.note}}</view><view class="actions"><button data-resource="medications" data-id="{{item.id}}" bindtap="edit">编辑 / 停用</button><button class="danger" data-resource="medications" data-id="{{item.id}}" bindtap="remove">删除</button></view></view>
+  <view class="heading">实际执行记录（{{medicationLogs.length}}）</view><view wx:if="{{!medicationLogs.length}}" class="card muted">暂无实际执行记录</view><view wx:for="{{medicationLogs}}" wx:key="id" class="card"><view>{{item.name}} {{item.missed?'漏服':item.dose}}</view><view class="muted">{{item.occurredAt}} {{item.note}}</view><view class="actions"><button data-resource="medicationLogs" data-id="{{item.id}}" bindtap="edit">编辑</button><button class="danger" data-resource="medicationLogs" data-id="{{item.id}}" bindtap="remove">删除</button></view></view>
+ </block>
+ <block wx:if="{{tab==='labs'}}">
+  <view class="heading">历史化验（{{labs.length}}）</view><view wx:if="{{!labs.length}}" class="card muted">暂无化验记录</view>
+  <view wx:for="{{labs}}" wx:key="id" class="card"><view>{{item.name}}：{{item.value}} {{item.unit}}</view><view class="muted">{{item.testedAt}} · 参考 {{item.reference||'未填写'}} · {{item.hospital}} {{item.note}}</view><view class="actions"><button data-resource="labs" data-id="{{item.id}}" bindtap="edit">编辑</button><button class="danger" data-resource="labs" data-id="{{item.id}}" bindtap="remove">删除</button></view></view>
+ </block>
+ <block wx:if="{{tab==='trend'}}">
+  <view class="heading">趋势与报告</view><view class="actions"><button data-days="7" bindtap="rangeButton">最近7天</button><button data-days="30" bindtap="rangeButton">最近30天</button></view><view class="card"><view class="field-name">开始日期</view><picker mode="date" value="{{from}}" data-key="from" bindchange="rangeChange"><view class="picker">{{from}}</view></picker><view class="field-name">结束日期</view><picker mode="date" value="{{to}}" data-key="to" bindchange="rangeChange"><view class="picker">{{to}}</view></picker></view>
+  <view class="heading">体温曲线 · ℃</view><view class="card"><canvas canvas-id="temperatureChart" class="chart"/></view>
+  <view class="heading">化验趋势（单指标、单单位）</view><view class="card"><picker range="{{labKeys}}" value="{{labIndex}}" bindchange="labChange"><view class="picker">{{labKeys[labIndex]||'暂无化验指标'}}</view></picker><canvas canvas-id="labChart" class="chart"/></view>
+  <view class="heading">用药、症状与重要事件时间线</view><view wx:if="{{!timeline.length}}" class="card muted">所选范围暂无事件</view><view class="card"><view wx:for="{{timeline}}" wx:key="index" class="list"><view>{{item.date}} {{item.title}}</view><view class="muted">{{item.detail}}</view></view></view>
+  <view class="heading">重要病程事件</view><view class="card"><input placeholder="事件时间 YYYY-MM-DDTHH:mm" value="{{resource==='events'?form.occurredAt:''}}" data-key="occurredAt" bindinput="fieldInput"/><input placeholder="事件标题" value="{{resource==='events'?form.title:''}}" data-key="title" bindinput="fieldInput"/><textarea placeholder="详情及备注" value="{{resource==='events'?form.detail:''}}" data-key="detail" bindinput="fieldInput"/><button bindtap="save" disabled="{{resource!=='events'||busy}}">保存事件</button></view>
+  <view class="heading">病程报告</view><view class="card report">{{summary}}</view><button class="primary" bindtap="copyReport">复制报告</button><button bindtap="exportBackup">导出 JSON 备份</button><button bindtap="importBackup">导入 JSON（确认后覆盖恢复）</button>
+ </block>
+</view><view class="tabs"><view wx:for="{{tabs}}" wx:key="key" class="tab {{tab===item.key?'active':''}}" data-key="{{item.key}}" bindtap="selectTab">{{item.label}}</view></view>

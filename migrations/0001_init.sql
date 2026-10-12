@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS temperatures(id TEXT PRIMARY KEY, measured_at TEXT NOT NULL, value REAL NOT NULL, method TEXT NOT NULL, symptoms TEXT NOT NULL DEFAULT '[]', note TEXT DEFAULT '', schema_version INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS medications(id TEXT PRIMARY KEY, name TEXT NOT NULL, spec TEXT, unit TEXT, dose REAL NOT NULL, frequency INTEGER NOT NULL, route TEXT, start_date TEXT NOT NULL, end_date TEXT, note TEXT, schema_version INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS medication_logs(id TEXT PRIMARY KEY, medication_id TEXT NOT NULL, occurred_at TEXT NOT NULL, dose REAL NOT NULL, missed INTEGER NOT NULL DEFAULT 0, note TEXT, schema_version INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS labs(id TEXT PRIMARY KEY, tested_at TEXT NOT NULL, name TEXT NOT NULL, value REAL NOT NULL, unit TEXT, reference TEXT, hospital TEXT, note TEXT, schema_version INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, occurred_at TEXT NOT NULL, title TEXT NOT NULL, detail TEXT, schema_version INTEGER NOT NULL DEFAULT 1);

@@ -1,0 +1,29 @@
+{
+  "name": "kangcheng-record",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "worker:dev": "npm run build && wrangler dev --port 8787",
+    "test": "vitest run",
+    "build:mini": "node scripts/build-mini.mjs",
+    "db:migrate:local": "wrangler d1 migrations apply kangcheng-record --local",
+    "db:migrate:remote": "wrangler d1 migrations apply kangcheng-record --remote",
+    "deploy": "npm run build && wrangler deploy",
+    "test:api": "node scripts/test-api.mjs",
+    "check:server": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --skipLibCheck server/index.ts server/schema.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "6.0.10",
+    "typescript": "^5.9.3",
+    "vite": "8.3.4",
+    "vue": "3.5.43",
+    "vue-tsc": "3.3.13",
+    "wrangler": "4.149.0"
+  },
+  "devDependencies": {
+    "vitest": "5.0.3"
+  }
+}
