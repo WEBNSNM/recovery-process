@@ -1,1 +1,1 @@
-App({ globalData: { apiBase: 'https://kangcheng-record-api.1193134235.workers.dev' } })
+App({ globalData: { apiBase: 'https://kangcheng.xxymj.indevs.in' } })
