@@ -1,1 +1,1 @@
-App({ globalData: { apiBase: 'http://127.0.0.1:8787' } });
+App({ globalData: { apiBase: 'https://kangcheng-record-api.1193134235.workers.dev' } })

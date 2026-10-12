@@ -1,1 +1,9 @@
-{"pages":["pages/index/index"],"window":{"navigationBarTitleText":"康程记录","navigationBarBackgroundColor":"#ffffff","navigationBarTextStyle":"black"},"style":"v2"}
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "康程记录",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black"
+  },
+  "style": "v2"
+}
