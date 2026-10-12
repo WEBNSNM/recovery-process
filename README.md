@@ -199,6 +199,8 @@ CRUD 成功返回 `{data: ...}`；错误返回 `{error: ...}`。公网请求添�
 ## 验证
 
 ```powershell
+# 终端一：启动本地接口,修改前端代码可在微信开发者工具编译查看
+npm run worker:dev
 # 运行自动化单元测试，不启动服务也不部署
 npm test
 # 检查后端 TypeScript 类型，不启动服务也不部署
