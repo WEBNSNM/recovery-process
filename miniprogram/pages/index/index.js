@@ -130,6 +130,7 @@ Page({
     this.setData({ accessKey: e.detail.value })
   },
   onLoad() {
+    this.setData({ accessKey: wx.getStorageSync('kangcheng-access-key') || '' })
     this.rangeDays(7)
     this.reload()
   },
